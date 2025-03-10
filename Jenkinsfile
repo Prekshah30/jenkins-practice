@@ -1,9 +1,9 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage('Build'){
-            agent{
-                docker{
+    stages {
+        stage('Build') {
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -19,16 +19,16 @@ pipeline{
                 '''
             }
         }
-        stage('Test'){
-            parallel{
-            stage('Unit tests') {
+
+        stage('Tests') {
+            parallel {
+                stage('Unit tests') {
                     agent {
                         docker {
                             image 'node:18-alpine'
                             reuseNode true
                         }
                     }
-
                     steps {
                         sh '''
                             #test -f build/index.html
@@ -41,16 +41,18 @@ pipeline{
                             junit 'test-results/junit.xml'
                         }
                     }
-        }
-        }
-        stage('Deploy'){
-            agent{
-                docker{
+                }
+            } // <-- Closing the 'parallel' block properly
+        } // <-- Closing the 'Tests' stage properly
+
+        stage('Deploy') {
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
             }
-            steps{
+            steps {
                 sh '''
                   npm install netlify-cli 
                   node_modules/.bin/netlify --version
@@ -58,4 +60,4 @@ pipeline{
             }
         }
     }
-}}
+}
